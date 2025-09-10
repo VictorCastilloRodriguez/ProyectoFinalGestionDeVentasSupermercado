@@ -19,7 +19,7 @@ public class Sucursal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String nombre;
+    private String nombreSucursal;
     private String direccion;
 
     @OneToMany(mappedBy = "sucursal")
