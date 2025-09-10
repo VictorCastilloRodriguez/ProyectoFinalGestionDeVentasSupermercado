@@ -22,10 +22,10 @@ public class Venta {
     private boolean eliminado = false;
 
     @ManyToOne
-    @JoinColumn(name = "productoId")
+    @JoinColumn(name = "productoId", nullable = false)
     private Producto producto;
 
     @ManyToOne
-    @JoinColumn(name = "sucursalId" )
+    @JoinColumn(name = "sucursalId", nullable = false)
     private Sucursal sucursal;
 }

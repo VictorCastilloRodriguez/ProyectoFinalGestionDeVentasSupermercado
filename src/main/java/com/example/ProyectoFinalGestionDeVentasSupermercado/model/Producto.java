@@ -26,6 +26,7 @@ public class Producto {
     private Categoria categoria;
 
     @OneToMany( mappedBy = "producto",cascade = CascadeType.ALL,orphanRemoval = true)
+    @MapKeyJoinColumn(name = "sucursalId")
     private Map<Sucursal,Venta> ventaPorSucursal = new HashMap<>();
 
 }
