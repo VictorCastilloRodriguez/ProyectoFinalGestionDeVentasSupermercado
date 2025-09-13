@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,13 +20,12 @@ public class Venta {
     private Long id;
     private int cantidad;
     private LocalDateTime fechaVenta;
-    private boolean eliminado = false;
-
-    @ManyToOne
-    @JoinColumn(name = "productoId", nullable = false)
-    private Producto producto;
+    private boolean eliminado = false; //borrado lógico.
 
     @ManyToOne
     @JoinColumn(name = "sucursalId", nullable = false)
     private Sucursal sucursal;
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
+    private List<DetalleVenta> detallesVentas;
 }
