@@ -5,6 +5,7 @@ import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoR
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.ProductoNotFoundException;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -29,17 +30,17 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
-    // Listar productos
-    public Map<Long, Producto> listarProductosComoMapa() {
-        return productoRepository.findAll().stream()
-                .collect(Collectors.toMap(Producto::getId, producto -> producto));
-    }
-
     // Eliminar producto
     public void eliminarProducto(Long id) {
         if (!productoRepository.existsById(id)) {
             throw new ProductoNotFoundException("Producto con id: " + id + " no encontrado");
         }
         productoRepository.deleteById(id);
+    }
+
+    // Listar productos
+    public Map<Long, Producto> listarProductos() {
+        return productoRepository.findAll().stream()
+                .collect(Collectors.toMap(Producto::getId, producto -> producto));
     }
 }

@@ -16,14 +16,14 @@ public class SucursalController {
     @Autowired
     private SucursalService sucursalService;
 
-    //Crear sucursal
+    // Crear sucursal
     @PostMapping
     public ResponseEntity<Sucursal> crearSucursal(@Valid @RequestBody Sucursal sucursal) {
         Sucursal nuevaSucursal = sucursalService.crearSucursal(sucursal);
         return ResponseEntity.status(201).body(nuevaSucursal);
     }
 
-    //Actualizar sucursal
+    // Actualizar sucursal
     @PutMapping("/{id}")
     public ResponseEntity<Sucursal> actualizarSucursal(@PathVariable Long id, @Valid @RequestBody Sucursal sucursalActualizada) {
         Sucursal sucursalFinal = sucursalService.actualizarSucursal(id, sucursalActualizada);

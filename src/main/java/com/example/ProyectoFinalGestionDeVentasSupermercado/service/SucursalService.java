@@ -29,18 +29,18 @@ public class SucursalService {
         return sucursalRepository.save(sucursal);
     }
 
-    // Listar sucursal
-    public Map<Long, Sucursal> listarSucursales() {
-        return sucursalRepository.findAll().stream()
-                .collect(Collectors.toMap(Sucursal::getId, sucursal -> sucursal));
-    }
-
     // Eliminar sucursal
     public void eliminarSucursal(Long id) {
         if (!sucursalRepository.existsById(id)) {
             throw new SucursalNotFoundException("Sucursal con id: " + id + " no encontrada");
         }
         sucursalRepository.deleteById(id);
+    }
+
+    // Listar sucursal
+    public Map<Long, Sucursal> listarSucursales() {
+        return sucursalRepository.findAll().stream()
+                .collect(Collectors.toMap(Sucursal::getId, sucursal -> sucursal));
     }
 }
 
