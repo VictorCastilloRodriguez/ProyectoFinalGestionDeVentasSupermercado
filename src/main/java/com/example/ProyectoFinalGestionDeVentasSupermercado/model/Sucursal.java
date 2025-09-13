@@ -1,6 +1,7 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,8 +19,11 @@ public class Sucursal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank(message = "El nombre de la sucursal no puede estar vacia ")
     @Column(nullable = false)
     private String nombreSucursal;
+
+    @NotBlank(message = "La direccion de la sucursal no puede estar vacia ")
     @Column(nullable = false)
     private String direccion;
 
