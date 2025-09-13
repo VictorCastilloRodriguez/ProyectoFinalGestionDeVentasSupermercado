@@ -19,14 +19,12 @@ public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String nombreProducto;
+    @Column(nullable = false)
     private double precio;
 
    @Enumerated(EnumType.STRING)
+   @Column(nullable = false)
     private Categoria categoria;
-
-    @OneToMany( mappedBy = "producto",cascade = CascadeType.ALL,orphanRemoval = true)
-    @MapKeyJoinColumn(name = "sucursalId")
-    private Map<Sucursal,Venta> ventaPorSucursal = new HashMap<>();
-
 }
