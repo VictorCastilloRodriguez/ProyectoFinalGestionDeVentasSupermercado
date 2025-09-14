@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -18,7 +19,6 @@ public class Venta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int cantidad;
     private LocalDateTime fechaVenta;
     private boolean eliminado = false; //borrado lógico.
 
@@ -27,5 +27,5 @@ public class Venta {
     private Sucursal sucursal;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
-    private List<DetalleVenta> detallesVentas;
+    private List<DetalleVenta> detallesVentas = new ArrayList<>();
 }
