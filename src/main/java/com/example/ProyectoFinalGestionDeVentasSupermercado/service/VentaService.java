@@ -8,18 +8,20 @@ import com.example.ProyectoFinalGestionDeVentasSupermercado.model.DetalleVenta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.DetalleVentaRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.SucursalRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class VentaService {
+    @Autowired
+    private DetalleVentaRepository detalleVentaRepository;
 
     @Autowired
     private VentaRepository ventaRepository;
@@ -30,29 +32,40 @@ public class VentaService {
     @Autowired
     private ProductoRepository productoRepository;
 
-    public VentaDto crearVenta(VentaDto dto) {
-        Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
-                .orElseThrow(() -> new SucursalNotFoundException(dto.getIdSucursal()));
+    /* public VentaDto crearVenta(Venta dto) {
+         Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
+                 .orElseThrow(() -> new SucursalNotFoundException(dto.getIdSucursal()));
 
-        Venta venta = new Venta();
-        venta.setSucursal(sucursal);
-        venta.setFechaVenta(dto.getFecha().atStartOfDay());
-        venta.setEliminado(false);
+         Venta venta = new Venta();
+         venta.setSucursal(sucursal);
+         venta.setFechaVenta(dto.getFecha().atStartOfDay());
+         venta.setEliminado(false);
 
-        List<DetalleVenta> detalles = dto.getDetalleVentaDtos().stream().map(detDto -> {
-            Producto producto = productoRepository.findById(detDto.getProductoId())
-                    .orElseThrow(() -> new ProductoNotFoundException(detDto.getProductoId()));
-            DetalleVenta detalle = new DetalleVenta();
-            detalle.setProducto(producto);
-            detalle.setCantidad(detDto.getCantidad());
-            detalle.setVenta(venta);
-            return detalle;
-        }).collect(Collectors.toList());
+         List<DetalleVenta> detalles = dto.getDetalleVentaDtos().stream().map(detDto -> {
+             Producto producto = productoRepository.findById(detDto.getProductoId())
+                     .orElseThrow(() -> new ProductoNotFoundException(detDto.getProductoId()));
+             DetalleVenta detalle = new DetalleVenta();
+             detalle.setProducto(producto);
+             detalle.setCantidad(detDto.getCantidad());
+             detalle.setVenta(venta);
+             return detalle;
+         }).collect(Collectors.toList());
 
-        venta.setDetallesVentas(detalles);
-        Venta guardada = ventaRepository.save(venta);
-        return convertirVentaDto(guardada);
+         venta.setDetallesVentas(detalles);
+         Venta guardada = ventaRepository.save(venta);
+         return convertirVentaDto(guardada);
+     }*/
+    public VentaDto crearVenta(Venta venta) {
+        Venta miVenta = ventaRepository.save(venta);
+        List<DetalleVenta> detallesVenta = miVenta.getDetallesVentas();
+        for(DetalleVenta detalleVenta: detallesVenta){
+            detalleVentaRepository.save(detalleVenta);
+        }
+        return convertirVentaDto(miVenta);
+
     }
+
+
 
     public VentaDto convertirVentaDto(Venta venta) {
         VentaDto dto = new VentaDto();

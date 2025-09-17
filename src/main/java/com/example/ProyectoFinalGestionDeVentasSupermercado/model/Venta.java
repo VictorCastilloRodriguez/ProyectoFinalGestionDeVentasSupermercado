@@ -23,7 +23,7 @@ public class Venta {
     private boolean eliminado = false; //borrado lógico.
 
     @ManyToOne
-    @JoinColumn(name = "sucursalId", nullable = false)
+    @JoinColumn(name = "sucursal_id", nullable = false)
     private Sucursal sucursal;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)

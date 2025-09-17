@@ -1,6 +1,7 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.controller;
 
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.service.VentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +15,8 @@ public class VentaController {
     private VentaService ventaService;
 
     @PostMapping
-    public ResponseEntity<VentaDto> crearVenta(@RequestBody VentaDto ventaDto) {
-        return ResponseEntity.status(201).body(ventaService.crearVenta(ventaDto));
+    public ResponseEntity<?> crearVenta(@RequestBody Venta venta) {
+        return ResponseEntity.status(201).body(ventaService.crearVenta(venta));
     }
 }
 
