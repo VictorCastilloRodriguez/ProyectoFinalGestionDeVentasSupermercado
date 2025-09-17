@@ -2,14 +2,21 @@ package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.DetalleVentaDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.ProductoNotFoundException;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.SucursalNotFoundException;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.DetalleVenta;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.DetalleVentaRepository;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.SucursalRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
-import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @Service
 public class VentaService {
@@ -17,26 +24,52 @@ public class VentaService {
     @Autowired
     private VentaRepository ventaRepository;
 
-    //Convertir la venta en ventaDto
-    public VentaDto convertirVentaDto(Venta venta){
-        VentaDto ventaDto = new VentaDto();
+    @Autowired
+    private SucursalRepository sucursalRepository;
 
-        ventaDto.setIdVenta(venta.getId());
-        ventaDto.setIdSucursal(venta.getSucursal().getId());
-        ventaDto.setFecha(venta.getFechaVenta().toLocalDate());
+    @Autowired
+    private ProductoRepository productoRepository;
 
-        List<DetalleVentaDto> detallesDto = venta.getDetallesVentas().stream().map(det ->{
-            DetalleVentaDto detalleVentaDto = new DetalleVentaDto();
-            detalleVentaDto.setProductoId(det.getProducto().getId());
-            detalleVentaDto.setCantidad(det.getCantidad());
-            detalleVentaDto.setImporte(det.getCantidad()*det.getProducto().getPrecio());
-            return detalleVentaDto;
-        }).toList();
-        ventaDto.setDetalleVentaDtos(detallesDto);
-        return ventaDto;
+    public VentaDto crearVenta(VentaDto dto) {
+        Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
+                .orElseThrow(() -> new SucursalNotFoundException(dto.getIdSucursal()));
+
+        Venta venta = new Venta();
+        venta.setSucursal(sucursal);
+        venta.setFechaVenta(dto.getFecha().atStartOfDay());
+        venta.setEliminado(false);
+
+        List<DetalleVenta> detalles = dto.getDetalleVentaDtos().stream().map(detDto -> {
+            Producto producto = productoRepository.findById(detDto.getProductoId())
+                    .orElseThrow(() -> new ProductoNotFoundException(detDto.getProductoId()));
+            DetalleVenta detalle = new DetalleVenta();
+            detalle.setProducto(producto);
+            detalle.setCantidad(detDto.getCantidad());
+            detalle.setVenta(venta);
+            return detalle;
+        }).collect(Collectors.toList());
+
+        venta.setDetallesVentas(detalles);
+        Venta guardada = ventaRepository.save(venta);
+        return convertirVentaDto(guardada);
     }
 
-    public Venta crearVenta(Venta venta){
-        return ventaRepository.save(venta);
+    public VentaDto convertirVentaDto(Venta venta) {
+        VentaDto dto = new VentaDto();
+        dto.setIdVenta(venta.getId());
+        dto.setIdSucursal(venta.getSucursal().getId());
+        dto.setFecha(venta.getFechaVenta().toLocalDate());
+
+        List<DetalleVentaDto> detallesDto = venta.getDetallesVentas().stream().map(det -> {
+            DetalleVentaDto detalleDto = new DetalleVentaDto();
+            detalleDto.setProductoId(det.getProducto().getId());
+            detalleDto.setCantidad(det.getCantidad());
+            detalleDto.setImporte(det.getCantidad() * det.getProducto().getPrecio());
+            return detalleDto;
+        }).collect(Collectors.toList());
+
+        dto.setDetalleVentaDtos(detallesDto);
+        return dto;
     }
 }
+

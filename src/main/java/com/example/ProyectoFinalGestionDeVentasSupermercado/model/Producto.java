@@ -30,6 +30,11 @@ public class Producto {
     @Column(nullable = false)
     private double precio;
 
+    @Min(value = 0, message = "EL stock debe ser mayor o igual a 0")
+    @Column(nullable = false)
+    private Integer stock;
+
+
    @Enumerated(EnumType.STRING)
    @Column(nullable = false)
     private Categoria categoria;

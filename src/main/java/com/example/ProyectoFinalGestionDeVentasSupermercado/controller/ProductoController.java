@@ -1,10 +1,11 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.controller;
 
-import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.ProductoDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.service.ProductoService;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,29 +20,31 @@ public class ProductoController {
 
     // Crear producto
     @PostMapping
-    public ResponseEntity<Producto> crearProducto(@Valid @RequestBody Producto producto) {
-        Producto nuevoProducto = productoService.crearProducto(producto);
-        return ResponseEntity.status(201).body(nuevoProducto);
+    public ResponseEntity<ProductoDto> crearProducto(@Valid @RequestBody ProductoDto productoDto) {
+        ProductoDto nuevoProducto = productoService.crearProducto(productoDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
     }
 
     // Actualizar producto
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid @RequestBody Producto productoActualizado) {
-        Producto productoActualizadoFinal = productoService.actualizarProducto(id, productoActualizado);
-        return ResponseEntity.ok(productoActualizadoFinal);
+    public ResponseEntity<ProductoDto> actualizarProducto(@PathVariable("id") Long id,@Valid @RequestBody ProductoDto productoDto) {
+        return ResponseEntity.status(200).body(productoService.actualizarProducto(id, productoDto));
     }
+
 
     // Eliminar producto
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+    public ResponseEntity<String> eliminarProducto(@PathVariable("id") Long id) {
         productoService.eliminarProducto(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.OK).body("EL producto ha sido eliminado");
     }
 
     // Listar productos
     @GetMapping
-    public ResponseEntity<Map<Long, Producto>> listarProductos() {
-        Map<Long, Producto> productosMap = productoService.listarProductos();
-        return ResponseEntity.ok(productosMap);
+    public ResponseEntity<Map<Long, ProductoDto>> listarProductos() {
+        Map<Long, ProductoDto> productos = productoService.listarProductos();
+        return ResponseEntity.ok(productos);
     }
 }
+
+

@@ -1,9 +1,10 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.controller;
 
-import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.SucursalDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.service.SucursalService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,32 +17,26 @@ public class SucursalController {
     @Autowired
     private SucursalService sucursalService;
 
-    // Crear sucursal
     @PostMapping
-    public ResponseEntity<Sucursal> crearSucursal(@Valid @RequestBody Sucursal sucursal) {
-        Sucursal nuevaSucursal = sucursalService.crearSucursal(sucursal);
-        return ResponseEntity.status(201).body(nuevaSucursal);
+    public ResponseEntity<SucursalDto> crearSucursal(@Valid @RequestBody SucursalDto sucursalDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(sucursalService.crearSucursal(sucursalDto));
     }
 
-    // Actualizar sucursal
     @PutMapping("/{id}")
-    public ResponseEntity<Sucursal> actualizarSucursal(@PathVariable Long id, @Valid @RequestBody Sucursal sucursalActualizada) {
-        Sucursal sucursalFinal = sucursalService.actualizarSucursal(id, sucursalActualizada);
-        return ResponseEntity.ok(sucursalFinal);
+    public ResponseEntity<SucursalDto> actualizarSucursal(@PathVariable("id") Long id, @Valid @RequestBody SucursalDto sucursalDto) {
+        return ResponseEntity.status(200).body(sucursalService.actualizarSucursal(id, sucursalDto));
     }
 
-    // Eliminar sucursal
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarSucursal(@PathVariable Long id) {
+    public ResponseEntity<String> eliminarSucursal(@PathVariable("id") Long id) {
         sucursalService.eliminarSucursal(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.OK).body("La sucursal ha sido eliminada");
     }
 
-    // Listar sucursales
     @GetMapping
-    public ResponseEntity<Map<Long, Sucursal>> listarSucursales() {
-        Map<Long, Sucursal> sucursalesMap = sucursalService.listarSucursales();
-        return ResponseEntity.ok(sucursalesMap);
+    public ResponseEntity<Map<Long, SucursalDto>> listarSucursales() {
+        return ResponseEntity.ok(sucursalService.listarSucursales());
     }
 }
+
 
