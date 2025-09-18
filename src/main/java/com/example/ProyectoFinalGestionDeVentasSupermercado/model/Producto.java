@@ -41,7 +41,21 @@ public class Producto {
     private Categoria categoria;
 
     @Column(nullable = false)
-    private boolean retirado = false;
+    private boolean retirado=false;
+
+    //CONSTRUCTOR SIN RETIRADO
+    public Producto(String nombre, double precio, Integer stock, Categoria categoria) {
+        this.nombre = nombre;
+        this.precio = precio;
+        this.stock = stock;
+        this.categoria = categoria;
+    }
+
+
+
+
+
+
 
 
 

@@ -24,8 +24,7 @@ public class ProductoController {
     @PostMapping
     public ResponseEntity<ProductoDto> crearProducto(@Valid @RequestBody ProductoDto  productoDto) {
 
-        Producto producto = new Producto(null,productoDto.getNombreProducto(), productoDto.getPrecioProducto(), productoDto.getStockProducto(), productoDto.getCategoriaProducto(),false);
-        return ResponseEntity.status(HttpStatus.CREATED).body(productoService.save(producto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productoService.save(productoDto));
     }
 
     // Actualizar producto

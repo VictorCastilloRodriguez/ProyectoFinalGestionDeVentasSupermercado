@@ -24,8 +24,8 @@ public class ProductoService {
     private SucursalRepository sucursalRepository;
 
     // Crear producto
-    public ProductoDto save(Producto producto) {
-        return entityToDto(productoRepository.save(producto));
+    public ProductoDto save(ProductoDto productoDto) {
+        return entityToDto(productoRepository.save(dtoToEntity(productoDto)));
     }
 
      // Listar productos
