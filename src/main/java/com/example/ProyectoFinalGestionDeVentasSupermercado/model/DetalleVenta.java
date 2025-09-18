@@ -18,11 +18,11 @@ public class DetalleVenta {
     private int cantidad;
 
     @ManyToOne
-    @JoinColumn(name = "productoId", nullable = false)
+    @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
     @ManyToOne
-    @JoinColumn(name = "ventaId", nullable = false)
+    @JoinColumn(name = "venta_id", nullable = false)
     private Venta venta;
 
 }

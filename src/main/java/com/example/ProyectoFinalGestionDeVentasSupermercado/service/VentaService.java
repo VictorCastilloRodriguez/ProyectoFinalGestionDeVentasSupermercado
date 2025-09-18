@@ -15,6 +15,7 @@ import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepo
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,15 +56,26 @@ public class VentaService {
          Venta guardada = ventaRepository.save(venta);
          return convertirVentaDto(guardada);
      }*/
-    public VentaDto crearVenta(Venta venta) {
-        Venta miVenta = ventaRepository.save(venta);
-        List<DetalleVenta> detallesVenta = miVenta.getDetallesVentas();
-        for(DetalleVenta detalleVenta: detallesVenta){
-            detalleVentaRepository.save(detalleVenta);
-        }
-        return convertirVentaDto(miVenta);
 
+    public Venta crearVenta(Venta venta) {
+        Sucursal sucursal = sucursalRepository.findById(venta.getSucursal().getId())
+                .orElseThrow(() -> new SucursalNotFoundException("Sucursal no encontrada"));
+
+        venta.setSucursal(sucursal);
+        venta.setFechaVenta(LocalDateTime.now());
+
+        for (DetalleVenta detalle : venta.getDetallesVentas()) {
+            Producto producto = productoRepository.findById(detalle.getProducto().getId())
+                    .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
+
+            detalle.setProducto(producto);
+            detalle.setVenta(venta);
+        }
+
+        return ventaRepository.save(venta);
     }
+
+
 
 
 

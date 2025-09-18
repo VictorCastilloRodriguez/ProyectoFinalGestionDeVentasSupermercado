@@ -2,7 +2,6 @@ package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.ProductoDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.ProductoNotFoundException;
 
@@ -11,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -24,24 +24,35 @@ public class ProductoService {
     private SucursalRepository sucursalRepository;
 
     // Crear producto
-    public ProductoDto crearProducto(@Valid ProductoDto productoDto) {
-        Producto producto = dtoToEntity(productoDto);
-        Producto guardado = productoRepository.save(producto);
-        return entityToDto(guardado);
+    public ProductoDto save(Producto producto) {
+        return entityToDto(productoRepository.save(producto));
+    }
+
+     // Listar productos
+
+
+    public Map<Long,ProductoDto> findAll() {
+        return productoRepository.findAll().stream()
+                .filter(producto -> !producto.isRetirado()) // solo productos activos
+                .collect(Collectors.toMap(
+
+                        Producto::getId,
+                        this::entityToDto
+                ));
     }
 
     // Actualizar producto
+
     public ProductoDto actualizarProducto(Long id, @Valid ProductoDto productoActualizado) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ProductoNotFoundException("Producto con id: " + id + " no encontrado"));
 
-        producto.setNombreProducto(productoActualizado.getNombreProducto());
-        producto.setPrecio(productoActualizado.getPrecio());
-        producto.setStock(productoActualizado.getStock());
-        producto.setCategoria(productoActualizado.getCategoria());
+        producto.setNombre(productoActualizado.getNombreProducto());
+        producto.setPrecio(productoActualizado.getPrecioProducto());
+        producto.setStock(productoActualizado.getStockProducto());
+        producto.setCategoria(productoActualizado.getCategoriaProducto());
 
-        Producto actualizado = productoRepository.save(producto);
-        return entityToDto(actualizado);
+        return entityToDto(productoRepository.save(producto));
     }
 
     // Eliminar producto
@@ -49,38 +60,40 @@ public class ProductoService {
         if (!productoRepository.existsById(id)) {
             throw new ProductoNotFoundException("Producto con id: " + id + " no encontrado");
         }
-        productoRepository.deleteById(id);
+        Producto productoEliminado = productoRepository.findById(id).get();
+        if(productoEliminado.isRetirado()){
+            throw new ProductoNotFoundException("Producto con id: " + id + " ya está retirado");
+        }
+        productoEliminado.setRetirado(true);
+        productoEliminado.setStock(0);
+        productoRepository.save(productoEliminado);
     }
 
-    // Listar productos
-    public Map<Long, ProductoDto> listarProductos() {
-        return productoRepository.findAll().stream()
-                .collect(Collectors.toMap(
-                        Producto::getId,
-                        this::entityToDto
-                ));
-    }
 
-    // Conversión de DTO a entidad
+
+
+
+   //CONVERSIONES
     private Producto dtoToEntity(ProductoDto dto) {
         Producto producto = new Producto();
-        producto.setNombreProducto(dto.getNombreProducto());
-        producto.setPrecio(dto.getPrecio());
-        producto.setStock(dto.getStock());
-        producto.setCategoria(dto.getCategoria());
+        producto.setNombre(dto.getNombreProducto());
+        producto.setPrecio(dto.getPrecioProducto());
+        producto.setStock(dto.getStockProducto());
+        producto.setCategoria(dto.getCategoriaProducto());
 
         return producto;
     }
 
-    // Conversión de entidad a DTO
     private ProductoDto entityToDto(Producto producto) {
         ProductoDto dto = new ProductoDto();
-        dto.setNombreProducto(producto.getNombreProducto());
-        dto.setPrecio(producto.getPrecio());
-        dto.setCategoria(producto.getCategoria());
-        dto.setStock(producto.getStock());
+        dto.setNombreProducto(producto.getNombre());
+        dto.setPrecioProducto(producto.getPrecio());
+        dto.setCategoriaProducto(producto.getCategoria());
+        dto.setStockProducto(producto.getStock());
 
 
         return dto;
     }
+
+
 }
