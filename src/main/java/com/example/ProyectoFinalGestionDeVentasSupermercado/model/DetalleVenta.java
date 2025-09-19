@@ -16,6 +16,7 @@ public class DetalleVenta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private int cantidad;
+    private double importe;
 
     @ManyToOne
     @JoinColumn(name = "productoId", nullable = false)
