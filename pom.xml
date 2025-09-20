@@ -69,6 +69,24 @@
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>3.0.2</version>
 		</dependency>
+		<!--Interfaz publica de la libreria -->
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-api</artifactId>
+		<version>0.12.3</version>
+	</dependency>
+	<!--Implementacion interna de la api -->
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-impl</artifactId>
+		<version>0.12.3</version>
+	</dependency>
+	<!--Serializar/deserializar json dentro del token -->
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-jackson</artifactId>
+		<version>0.12.3</version>
+	</dependency>
 
 	</dependencies>
 
