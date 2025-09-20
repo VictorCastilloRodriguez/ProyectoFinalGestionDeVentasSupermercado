@@ -18,5 +18,5 @@ public class VentaController {
 
 
     //Producto mas vendido
-    @GetMapping("/api/estadisticas/producto-mas-vendido")"
+   // @GetMapping("/api/estadisticas/producto-mas-vendido")
 }
