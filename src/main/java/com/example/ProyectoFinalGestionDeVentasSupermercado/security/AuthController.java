@@ -14,14 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     @Autowired
-    private JwtService jwtService;
+    private AuthService authService;
 
-    @PostMapping("login")
-    public ResponseEntity<?> login(@RequestBody Usuario usuario){
-        if("username".equals(usuario.getUsername()) && "password".equals(usuario.getPassword())){
-            String token = jwtService.generarToken(usuario.getUsername());
-            return ResponseEntity.ok(token);
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody Usuario usuario) {
+        String token = authService.login(usuario.getUsername(), usuario.getPassword());
+        return ResponseEntity.ok(token);
     }
 }
