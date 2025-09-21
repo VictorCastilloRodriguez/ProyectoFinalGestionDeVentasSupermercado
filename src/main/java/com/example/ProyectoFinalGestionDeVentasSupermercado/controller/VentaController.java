@@ -1,7 +1,9 @@
-package com.proyectofinal.gestionventas.supermercado.controller;
+package com.example.ProyectoFinalGestionDeVentasSupermercado.controller;
 
-import com.proyectofinal.gestionventas.supermercado.dto.VentaDto;
-import com.proyectofinal.gestionventas.supermercado.service.VentaService;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaCreacionDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.service.VentaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +19,10 @@ public class VentaController {
     @Autowired
     private VentaService ventaService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<VentaDto> crearVenta(@RequestBody VentaDto ventaDto) {
+    public ResponseEntity<VentaDto> crearVenta(@Valid @RequestBody VentaCreacionDto ventaDto) {
         VentaDto nuevaVenta = ventaService.crearVenta(ventaDto);
-        return new ResponseEntity<>(nuevaVenta, HttpStatus.CREATED);
-    }
+        return ResponseEntity.status(201).body(nuevaVenta);
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @GetMapping
-    public ResponseEntity<List<VentaDto>> listarVentas() {
-        List<VentaDto> ventas = ventaService.listarVentas();
-        return new ResponseEntity<>(ventas, HttpStatus.OK);
     }
 }
