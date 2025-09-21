@@ -32,4 +32,9 @@ public class Sucursal {
 
     @OneToMany(mappedBy = "sucursal")
     private List<Venta> ventas;
+
+    public Sucursal(String nombre, String direccion) {
+        this.nombre=nombre;
+        this.direccion=direccion;
+    }
 }

@@ -29,8 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class ProductoTest {
 
-    private Producto producto;
-    private ProductoDto productoDto;
     private String token;
 
 
@@ -43,7 +41,6 @@ public class ProductoTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        productoDto = new ProductoDto("productoTest", 1.43, 55, Categoria.ALIMENTACION);
         token = obtenerTokenAdmin();
     }
 
@@ -81,7 +78,6 @@ public class ProductoTest {
                                 .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonProducto)
-//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nombreProducto").value("Leche entera"))
@@ -105,7 +101,6 @@ public class ProductoTest {
                                 .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonProducto)
-//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isBadRequest());
     }
