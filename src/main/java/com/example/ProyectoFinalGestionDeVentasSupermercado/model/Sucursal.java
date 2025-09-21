@@ -21,11 +21,14 @@ public class Sucursal {
     private Long id;
     @NotBlank(message = "El nombre de la sucursal no puede estar vacia ")
     @Column(nullable = false)
-    private String nombreSucursal;
+    private String nombre;
 
     @NotBlank(message = "La direccion de la sucursal no puede estar vacia ")
     @Column(nullable = false)
     private String direccion;
+
+    @Column(nullable = false)
+    private boolean cerrada=false;
 
     @OneToMany(mappedBy = "sucursal")
     private List<Venta> ventas;
