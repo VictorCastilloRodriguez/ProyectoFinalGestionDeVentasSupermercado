@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DetalleVentaDto {
+public class DetalleVentaCreacionDto {
     private Long productoId;
     private int cantidad;
-    private double importe;
 }
