@@ -19,14 +19,14 @@ public class ProductoDto {
     private String nombreProducto;
 
     @Min(value = 0, message = "El precio debe ser mayor o igual a 0")
-    private double precio;
+    private double precioProducto;
 
     @NotNull(message = "El stock no puede estar vacío")
     @Min(value = 0, message = "El stock debe ser mayor o igual a 0")
-    private Integer stock;
+    private Integer stockProducto;
 
 
     @NotNull(message = "La categoría es obligatoria")
-    private Categoria categoria;
+    private Categoria categoriaProducto;
 }
 

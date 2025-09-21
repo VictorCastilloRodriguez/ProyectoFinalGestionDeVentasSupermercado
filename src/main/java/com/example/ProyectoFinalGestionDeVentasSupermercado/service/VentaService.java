@@ -22,6 +22,7 @@ public class VentaService {
     @Autowired
     private ProductoRepository productoRepository;
 
+  
     public VentaDto crearVenta(VentaCreacionDto dto) {
         Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
                 .orElseThrow(() -> new SucursalNotFoundException(dto.getIdSucursal()));
@@ -51,6 +52,26 @@ public class VentaService {
         return convertirVentaDto(guardada);
     }
 
+
+    public Venta crearVenta(Venta venta) {
+        Sucursal sucursal = sucursalRepository.findById(venta.getSucursal().getId())
+                .orElseThrow(() -> new SucursalNotFoundException("Sucursal no encontrada"));
+
+        venta.setSucursal(sucursal);
+        venta.setFechaVenta(LocalDateTime.now());
+
+        for (DetalleVenta detalle : venta.getDetallesVentas()) {
+            Producto producto = productoRepository.findById(detalle.getProducto().getId())
+                    .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
+
+            detalle.setProducto(producto);
+            detalle.setVenta(venta);
+        }
+
+        return ventaRepository.save(venta);
+    }
+
+ 
     public VentaDto convertirVentaDto(Venta venta) {
         VentaDto dto = new VentaDto();
         dto.setIdVenta(venta.getId());
