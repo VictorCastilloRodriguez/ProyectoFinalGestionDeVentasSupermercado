@@ -1,14 +1,15 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
-import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaCreacionDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.SucursalDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.DetalleVenta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.SucursalRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,65 +32,64 @@ public class VentaService {
     private ProductoRepository productoRepository;
 
     @Autowired
+    private SucursalRepository sucursalRepository;
+
+    @Autowired
     private ModelMapper mapper;
 
     @Transactional
     public VentaDto crearVentaDesdeJson(JsonNode payload) {
         Venta venta = new Venta();
+        venta.setFechaVenta(LocalDate.now());
 
-        if (payload.hasNonNull("fechaVenta")) {
-            try {
-                venta.setFechaVenta(LocalDate.parse(payload.get("fechaVenta").asText()));
-            } catch (Exception e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fechaVenta con formato inválido, use yyyy-MM-dd");
-            }
-        } else {
-            venta.setFechaVenta(LocalDate.now());
+        Long sucursalId = payload.hasNonNull("sucursalId") ? payload.get("sucursalId").asLong() : null;
+        if (sucursalId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sucursalId es obligatorio");
         }
 
-        if (payload.hasNonNull("sucursalId")) {
-            // opcional: cargar entidad Sucursal si quieres validar existencia
-            // Long sucursalId = payload.get("sucursalId").asLong();
-            // venta.setSucursal(sucursalRepository.findById(sucursalId).orElse(null));
+        Sucursal sucursal = sucursalRepository.findById(sucursalId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sucursal no encontrada: " + sucursalId));
+        venta.setSucursal(sucursal);
+
+        JsonNode detallesNode = payload.get("detalles");
+        if (detallesNode == null || !detallesNode.isArray()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'detalles' debe ser un arreglo");
         }
 
-        if (!payload.has("lineas") || !payload.get("lineas").isArray()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Se requiere el campo lineas como arreglo");
-        }
+        double totalVenta = 0.0;
 
-        ArrayNode arr = (ArrayNode) payload.get("lineas");
-        Iterator<JsonNode> it = arr.elements();
-        while (it.hasNext()) {
-            JsonNode l = it.next();
-
+        for (JsonNode l : detallesNode) {
             Long productoId = l.hasNonNull("productoId") ? l.get("productoId").asLong() : null;
-            String nombreProducto = l.hasNonNull("nombreProducto") ? l.get("nombreProducto").asText() : null;
-            Double precio = l.hasNonNull("precio") ? l.get("precio").asDouble() : null;
             Integer cantidad = l.hasNonNull("cantidad") ? l.get("cantidad").asInt() : 0;
 
-            if (productoId == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada línea debe traer productoId");
+            if (productoId == null || cantidad <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada detalle debe tener productoId y cantidad > 0");
             }
-            if (cantidad <= 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada línea debe traer cantidad > 0 para productoId " + productoId);
-            }
+
+            Producto producto = productoRepository.findById(productoId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no encontrado: " + productoId));
 
             DetalleVenta detalle = new DetalleVenta();
             detalle.setProductoId(productoId);
-            detalle.setNombreProducto(nombreProducto);
-            detalle.setPrecio(precio);
+            detalle.setNombreProducto(producto.getNombre());
+            detalle.setPrecio(producto.getPrecio());
             detalle.setCantidad(cantidad);
             detalle.setVenta(venta);
+
             venta.getDetallesVentas().add(detalle);
+            totalVenta += producto.getPrecio() * cantidad;
         }
 
         validarStockPreventa(venta);
+        venta.setImporteTotal(totalVenta);
 
         Venta ventaGuardada = ventaRepository.save(venta);
-
         ventaGuardada.getDetallesVentas().forEach(this::procesarDetalleParaStockYProducto);
 
-        return mapper.map(ventaGuardada, VentaDto.class);
+        VentaDto dto = mapper.map(ventaGuardada, VentaDto.class);
+        dto.setSucursalId(sucursal.getId());
+        dto.setSucursal(new SucursalDto(sucursal.getNombre(), sucursal.getDireccion()));
+        return dto;
     }
 
     private void validarStockPreventa(Venta venta) {

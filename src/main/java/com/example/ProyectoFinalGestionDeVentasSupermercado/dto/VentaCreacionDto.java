@@ -1,5 +1,6 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +14,7 @@ import java.util.Map;
 public class VentaCreacionDto {
 
     @JsonProperty("fechaVenta")
+    @JsonIgnore
     private LocalDate fechaVenta;
 
     @JsonProperty("sucursalId")
@@ -23,6 +25,6 @@ public class VentaCreacionDto {
     private Long clienteId;
 
     @JsonProperty("detalles")
-    @NotEmpty(message = "lineas es requerido y no puede estar vacío")
+    @NotEmpty(message = "detalles es requerido y no puede estar vacío")
     private List<Map<String, Object>> detalles;
 }

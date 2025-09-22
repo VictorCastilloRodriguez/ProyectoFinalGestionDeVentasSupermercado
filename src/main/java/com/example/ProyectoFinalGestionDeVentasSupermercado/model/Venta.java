@@ -27,8 +27,11 @@ public class Venta {
     private boolean eliminado = false;
 
     @ManyToOne
-    @JoinColumn(name = "sucursal_id")
+    @JoinColumn(name = "sucursal_id", nullable = false)
     private Sucursal sucursal;
+
+    @Column(name = "importe_total", nullable = false)
+    private Double importeTotal = 0.0;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleVenta> detallesVentas = new ArrayList<>();

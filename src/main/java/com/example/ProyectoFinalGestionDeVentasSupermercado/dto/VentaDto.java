@@ -11,5 +11,7 @@ public class VentaDto {
     private LocalDate fechaVenta;
     private boolean eliminado;
     private Long sucursalId;
+    private Double importeTotal;
+    private SucursalDto sucursal;
     private List<DetalleVentaDto> detalles;
 }
