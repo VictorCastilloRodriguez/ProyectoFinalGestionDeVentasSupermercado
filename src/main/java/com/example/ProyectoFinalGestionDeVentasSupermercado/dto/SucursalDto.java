@@ -14,5 +14,5 @@ public class SucursalDto {
     private String nombreSucursal;
 
     @NotBlank(message = "La dirección de la sucursal no puede estar vacía")
-    private String direccion;
+    private String direccionSucursal;
 }

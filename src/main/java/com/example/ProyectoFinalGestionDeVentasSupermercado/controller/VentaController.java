@@ -5,9 +5,10 @@ import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.service.VentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,9 +21,9 @@ public class VentaController {
 
     //Registrar nueva venta
     @PostMapping
-    public ResponseEntity<VentaDto> crearVenta(@RequestBody VentaCreacionDto dto) {
-        VentaDto venta = ventaService.crearVenta(dto);
-        return ResponseEntity.ok(venta);
+ public ResponseEntity<VentaDto> crearVenta(@Valid @RequestBody VentaCreacionDto ventaDto) {
+        VentaDto nuevaVenta = ventaService.crearVenta(ventaDto);
+        return ResponseEntity.status(201).body(nuevaVenta);
     }
 
     // Consultar ventas por sucursal y fecha
@@ -39,6 +40,4 @@ public class VentaController {
     public ResponseEntity<String> anularVenta(@PathVariable Long id) {
         ventaService.anularVenta(id);
         return ResponseEntity.ok("Venta anulada correctamente");
-    }
 }
-

@@ -1,6 +1,7 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,21 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "detalleVentas")
-public class DetalleVenta {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int cantidad;
-    private double importe;
-
-    @ManyToOne
-    @JoinColumn(name = "producto_id", nullable = false)
-    private Producto producto;
-
-    @ManyToOne
-    @JoinColumn(name = "venta_id", nullable = false)
-    private Venta venta;
-
+    @NotBlank
+    @Column(unique = true)
+    private String username;
+    @NotBlank
+    private String password;
 }
