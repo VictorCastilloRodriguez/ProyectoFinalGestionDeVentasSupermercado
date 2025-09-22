@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long> {
 
-    @Query("SELECT dv.producto.id, SUM(dv.cantidad) as total FROM DetalleVenta dv GROUP BY dv.producto.id ORDER BY total DESC")
+    @Query("SELECT dv.productoId, SUM(dv.cantidad) as total FROM DetalleVenta dv GROUP BY dv.productoId ORDER BY total DESC")
     List<Object[]> findProductoMasVendido();
-
 }

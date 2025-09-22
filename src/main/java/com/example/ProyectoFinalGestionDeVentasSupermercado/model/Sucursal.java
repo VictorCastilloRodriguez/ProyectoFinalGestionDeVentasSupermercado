@@ -13,28 +13,28 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "sucursales")
-
 public class Sucursal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank(message = "El nombre de la sucursal no puede estar vacia ")
+
+    @NotBlank(message = "El nombre de la sucursal no puede estar vacia")
     @Column(nullable = false)
     private String nombre;
 
-    @NotBlank(message = "La direccion de la sucursal no puede estar vacia ")
+    @NotBlank(message = "La direccion de la sucursal no puede estar vacia")
     @Column(nullable = false)
     private String direccion;
 
     @Column(nullable = false)
-    private boolean cerrada=false;
+    private boolean cerrada = false;
 
     @OneToMany(mappedBy = "sucursal")
     private List<Venta> ventas;
 
     public Sucursal(String nombre, String direccion) {
-        this.nombre=nombre;
-        this.direccion=direccion;
+        this.nombre = nombre;
+        this.direccion = direccion;
     }
 }

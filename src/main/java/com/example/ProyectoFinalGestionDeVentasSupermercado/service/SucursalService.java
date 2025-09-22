@@ -1,9 +1,7 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.SucursalDto;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.ProductoNotFoundException;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.SucursalNotFoundException;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.SucursalRepository;
 import jakarta.validation.Valid;
@@ -34,23 +32,19 @@ public class SucursalService {
     }
 
     public void eliminarSucursal(Long id) {
+        Sucursal sucursalEliminada = sucursalRepository.findById(id)
+                .orElseThrow(() -> new SucursalNotFoundException("Sucursal con id: " + id + " no encontrada"));
 
-        if (!sucursalRepository.existsById(id)) {
-            throw new SucursalNotFoundException("Sucursal con id: " + id + " no encontrada");
-        }
-        Sucursal sucursalEliminada = sucursalRepository.findById(id).get();
-        if(sucursalEliminada.isCerrada()){
+        if (sucursalEliminada.isCerrada()) {
             throw new SucursalNotFoundException("Sucursal con id: " + id + " ya está cerrada");
         }
         sucursalEliminada.setCerrada(true);
         sucursalRepository.save(sucursalEliminada);
-
-
     }
 
     public Map<Long, SucursalDto> listarSucursales() {
         return sucursalRepository.findAll().stream()
-                .filter(sucursal -> !sucursal.isCerrada()) // solo productos activos
+                .filter(sucursal -> !sucursal.isCerrada())
                 .collect(Collectors.toMap(Sucursal::getId, this::entityToDto));
     }
 
@@ -65,5 +59,3 @@ public class SucursalService {
         return new SucursalDto(sucursal.getNombre(), sucursal.getDireccion());
     }
 }
-
-

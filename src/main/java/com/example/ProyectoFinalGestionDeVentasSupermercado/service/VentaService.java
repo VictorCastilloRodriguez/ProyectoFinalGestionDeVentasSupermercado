@@ -2,11 +2,13 @@ package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaCreacionDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.model.LineaVenta;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.DetalleVenta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,57 +34,75 @@ public class VentaService {
     @Autowired
     private ModelMapper mapper;
 
- 
     @Transactional
-    public VentaDto crearVenta(VentaCreacionDto ventaDto) {
+    public VentaDto crearVentaDesdeJson(JsonNode payload) {
         Venta venta = new Venta();
 
-        // Mapea campos imprescindibles
-        venta.setFecha(ventaDto.getFecha() != null ? ventaDto.getFecha() : LocalDate.now());
-        venta.setClienteId(ventaDto.getClienteId());
-        venta.setSucursalId(ventaDto.getSucursalId());
-
-        // Mapear líneas DTO
-        if (ventaDto.getLineas() != null) {
-            ventaDto.getLineas().forEach(lineaDto -> {
-                LineaVenta linea = new LineaVenta();
-                linea.setProductoId(lineaDto.getProductoId());
-                linea.setNombreProducto(lineaDto.getNombre()); 
-                linea.setPrecio(lineaDto.getPrecio());
-                linea.setCantidad(lineaDto.getCantidad() != null ? lineaDto.getCantidad() : 0);
-                linea.setVenta(venta);
-                venta.addLinea(linea);
-            });
+        if (payload.hasNonNull("fechaVenta")) {
+            try {
+                venta.setFechaVenta(LocalDate.parse(payload.get("fechaVenta").asText()));
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fechaVenta con formato inválido, use yyyy-MM-dd");
+            }
+        } else {
+            venta.setFechaVenta(LocalDate.now());
         }
 
-        // Valida stock EN TODAS las líneas antes de guardar la venta
-        validarStockPreventa(venta);
-
-        ventaRepository.save(venta);
-
-        // Por cada línea: decrementar el stock, crear/actualizar producto/vecesVendido
-        if (venta.getLineas() != null) {
-            venta.getLineas().forEach(this::procesarLineaParaStockYProducto);
+        if (payload.hasNonNull("sucursalId")) {
+            // opcional: cargar entidad Sucursal si quieres validar existencia
+            // Long sucursalId = payload.get("sucursalId").asLong();
+            // venta.setSucursal(sucursalRepository.findById(sucursalId).orElse(null));
         }
 
-        return mapper.map(venta, VentaDto.class);
-    }
+        if (!payload.has("lineas") || !payload.get("lineas").isArray()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Se requiere el campo lineas como arreglo");
+        }
 
-    /*
-     Valida que exista stock suficiente para todas las líneas de la venta.
-     Lanza ResponseStatusException(HttpStatus.BAD_REQUEST) si falta stock o producto no existe.
-     */
-    private void validarStockPreventa(Venta venta) {
-        if (venta.getLineas() == null) return;
+        ArrayNode arr = (ArrayNode) payload.get("lineas");
+        Iterator<JsonNode> it = arr.elements();
+        while (it.hasNext()) {
+            JsonNode l = it.next();
 
-        for (LineaVenta linea : venta.getLineas()) {
-            int cantidad = linea.getCantidad() != null ? linea.getCantidad() : 0;
-            Long productoId = linea.getProductoId();
+            Long productoId = l.hasNonNull("productoId") ? l.get("productoId").asLong() : null;
+            String nombreProducto = l.hasNonNull("nombreProducto") ? l.get("nombreProducto").asText() : null;
+            Double precio = l.hasNonNull("precio") ? l.get("precio").asDouble() : null;
+            Integer cantidad = l.hasNonNull("cantidad") ? l.get("cantidad").asInt() : 0;
 
             if (productoId == null) {
-                // No se permite vender productos sin identificar
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada línea debe traer productoId");
+            }
+            if (cantidad <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada línea debe traer cantidad > 0 para productoId " + productoId);
+            }
+
+            DetalleVenta detalle = new DetalleVenta();
+            detalle.setProductoId(productoId);
+            detalle.setNombreProducto(nombreProducto);
+            detalle.setPrecio(precio);
+            detalle.setCantidad(cantidad);
+            detalle.setVenta(venta);
+            venta.getDetallesVentas().add(detalle);
+        }
+
+        validarStockPreventa(venta);
+
+        Venta ventaGuardada = ventaRepository.save(venta);
+
+        ventaGuardada.getDetallesVentas().forEach(this::procesarDetalleParaStockYProducto);
+
+        return mapper.map(ventaGuardada, VentaDto.class);
+    }
+
+    private void validarStockPreventa(Venta venta) {
+        if (venta.getDetallesVentas() == null) return;
+
+        for (DetalleVenta dv : venta.getDetallesVentas()) {
+            int cantidad = dv.getCantidad() != null ? dv.getCantidad() : 0;
+            Long productoId = dv.getProductoId();
+
+            if (productoId == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "No se puede vender un producto sin identificar: " + linea.getNombreProducto());
+                        "No se puede vender un producto sin identificar: " + dv.getNombreProducto());
             }
 
             Producto producto = productoRepository.findById(productoId)
@@ -91,15 +112,15 @@ public class VentaService {
             int stockActual = producto.getStock() != null ? producto.getStock() : 0;
             if (stockActual < cantidad) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Stock insuficiente para el producto " + producto.getNombreProducto()
+                        "Stock insuficiente para el producto " + producto.getNombre()
                                 + ": disponible=" + stockActual + ", solicitado=" + cantidad);
             }
         }
     }
 
-    private void procesarLineaParaStockYProducto(LineaVenta linea) {
-        Long productoId = linea.getProductoId();
-        int cantidad = linea.getCantidad() != null ? linea.getCantidad() : 0;
+    private void procesarDetalleParaStockYProducto(DetalleVenta dv) {
+        Long productoId = dv.getProductoId();
+        int cantidad = dv.getCantidad() != null ? dv.getCantidad() : 0;
 
         Optional<Producto> opt = productoRepository.findById(productoId);
         if (!opt.isPresent()) {
@@ -109,52 +130,36 @@ public class VentaService {
 
         Producto producto = opt.get();
 
-        // Actualizar nombreProducto si la línea aporta nombre y es distinto
-        String nombreDesdeLinea = linea.getNombreProducto();
-        if (nombreDesdeLinea != null && !nombreDesdeLinea.equals(producto.getNombreProducto())) {
-            producto.setNombreProducto(nombreDesdeLinea);
+        if (dv.getNombreProducto() != null && !dv.getNombreProducto().equals(producto.getNombre())) {
+            producto.setNombre(dv.getNombreProducto());
         }
 
-        // Actualizar precio si es distinto
-        Double precioDesdeLinea = linea.getPrecio();
-        if (precioDesdeLinea != null && !precioDesdeLinea.equals(producto.getPrecio())) {
-            producto.setPrecio(precioDesdeLinea);
+        if (dv.getPrecio() != null && !dv.getPrecio().equals(producto.getPrecio())) {
+            producto.setPrecio(dv.getPrecio());
         }
 
-        // Decrementar stock asegurando que la cantidad de stock es superior a la vendida
         int stockPrevio = producto.getStock() != null ? producto.getStock() : 0;
         producto.setStock(Math.max(stockPrevio - cantidad, 0));
 
-        // Incrementar contador de veces vendido.
-        Integer veces = producto.getVecesVendido() != null ? producto.getVecesVendido() : 0;
-        producto.setVecesVendido(veces + cantidad);
+        int vecesPrevias = producto.getVecesVendido() != null ? producto.getVecesVendido() : 0;
+        producto.setVecesVendido(vecesPrevias + cantidad);
 
         productoRepository.save(producto);
     }
 
-    
-    // Obtener ventas por sucursal y fecha.
-     
     @Transactional(readOnly = true)
     public List<VentaDto> obtenerVentasPorSucursalYFecha(Long sucursalId, LocalDate fecha) {
-        List<Venta> ventas = ventaRepository.findBySucursalIdAndFechaAndEliminadoFalse(sucursalId, fecha);
+        List<Venta> ventas = ventaRepository.findBySucursalIdAndFechaVentaAndEliminadoFalse(sucursalId, fecha);
         return ventas.stream()
                 .map(v -> mapper.map(v, VentaDto.class))
                 .collect(Collectors.toList());
     }
 
-    
-    // Anular venta: borrado lógico usando campo eliminado si existe.
-   
     @Transactional
     public void anularVenta(Long id) {
         Venta venta = ventaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venta no encontrada"));
-        if (venta.getEliminado() != null) {
-            venta.setEliminado(true);
-        } else {
-            venta.setAnulada(true);
-        }
+        venta.setEliminado(true);
         ventaRepository.save(venta);
     }
 }

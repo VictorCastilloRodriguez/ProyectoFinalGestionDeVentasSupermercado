@@ -1,22 +1,28 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class VentaCreacionDto {
-    @NotNull(message = "El id de la sucursal no puede estar vacío")
-    private Long idSucursal;
 
-    @NotNull(message = "Debe incluir al menos un producto en la venta")
-    @Size(min = 1, message = "Debe haber al menos un producto en la venta")
-    private List<DetalleVentaCreacionDto> detalleVentaDtos;
+    @JsonProperty("fechaVenta")
+    private LocalDate fechaVenta;
+
+    @JsonProperty("sucursalId")
+    @NotNull(message = "sucursalId es requerido")
+    private Long sucursalId;
+
+    @JsonProperty("clienteId")
+    private Long clienteId;
+
+    @JsonProperty("detalles")
+    @NotEmpty(message = "lineas es requerido y no puede estar vacío")
+    private List<Map<String, Object>> detalles;
 }
-
