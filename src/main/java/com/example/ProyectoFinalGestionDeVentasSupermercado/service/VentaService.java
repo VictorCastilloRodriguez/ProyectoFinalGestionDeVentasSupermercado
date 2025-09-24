@@ -1,15 +1,25 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
-import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.*;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.ProductoNotFoundException;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.exception.SucursalNotFoundException;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.model.*;
-import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.*;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.SucursalDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.DetalleVenta;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Sucursal;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.SucursalRepository;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,79 +27,138 @@ public class VentaService {
 
     @Autowired
     private VentaRepository ventaRepository;
-    @Autowired
-    private SucursalRepository sucursalRepository;
+
     @Autowired
     private ProductoRepository productoRepository;
 
-  
-    public VentaDto crearVenta(VentaCreacionDto dto) {
-        Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
-                .orElseThrow(() -> new SucursalNotFoundException(dto.getIdSucursal()));
+    @Autowired
+    private SucursalRepository sucursalRepository;
 
+    @Autowired
+    private ModelMapper mapper;
+
+    @Transactional
+    public VentaDto crearVentaDesdeJson(JsonNode payload) {
         Venta venta = new Venta();
-        venta.setSucursal(sucursal);
-        venta.setFechaVenta(LocalDateTime.now()); // fecha automática
-        venta.setEliminado(false);
+        venta.setFechaVenta(LocalDate.now());
 
-        List<DetalleVenta> detalles = dto.getDetalleVentaDtos().stream()
-                .map(detDto -> {
-                    Producto producto = productoRepository.findById(detDto.getProductoId())
-                            .orElseThrow(() -> new ProductoNotFoundException(detDto.getProductoId()));
-
-                    DetalleVenta detalle = new DetalleVenta();
-                    detalle.setProducto(producto);
-                    detalle.setCantidad(detDto.getCantidad());
-                    detalle.setImporte(producto.getPrecio() * detDto.getCantidad()); // cálculo automático
-                    detalle.setVenta(venta);
-                    return detalle;
-                })
-                .collect(Collectors.toList()); // compatible con Java 8+
-
-        venta.setDetallesVentas(detalles);
-        Venta guardada = ventaRepository.save(venta);
-
-        return convertirVentaDto(guardada);
-    }
-
-
-    public Venta crearVenta(Venta venta) {
-        Sucursal sucursal = sucursalRepository.findById(venta.getSucursal().getId())
-                .orElseThrow(() -> new SucursalNotFoundException("Sucursal no encontrada"));
-
-        venta.setSucursal(sucursal);
-        venta.setFechaVenta(LocalDateTime.now());
-
-        for (DetalleVenta detalle : venta.getDetallesVentas()) {
-            Producto producto = productoRepository.findById(detalle.getProducto().getId())
-                    .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
-
-            detalle.setProducto(producto);
-            detalle.setVenta(venta);
+        Long sucursalId = payload.hasNonNull("sucursalId") ? payload.get("sucursalId").asLong() : null;
+        if (sucursalId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sucursalId es obligatorio");
         }
 
-        return ventaRepository.save(venta);
-    }
+        Sucursal sucursal = sucursalRepository.findById(sucursalId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sucursal no encontrada: " + sucursalId));
+        venta.setSucursal(sucursal);
 
- 
-    public VentaDto convertirVentaDto(Venta venta) {
-        VentaDto dto = new VentaDto();
-        dto.setIdVenta(venta.getId());
-        dto.setIdSucursal(venta.getSucursal().getId());
-        dto.setFecha(venta.getFechaVenta().toLocalDate());
+        JsonNode detallesNode = payload.get("detalles");
+        if (detallesNode == null || !detallesNode.isArray()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'detalles' debe ser un arreglo");
+        }
 
-        List<DetalleVentaDto> detallesDto = venta.getDetallesVentas().stream()
-                .map(det -> new DetalleVentaDto(
-                        det.getProducto().getId(),
-                        det.getCantidad(),
-                        det.getImporte()
-                ))
-                .collect(Collectors.toList());
+        double totalVenta = 0.0;
 
-        dto.setDetalleVentaDtos(detallesDto);
-        dto.setTotalVenta(detallesDto.stream().mapToDouble(DetalleVentaDto::getImporte).sum());
+        for (JsonNode l : detallesNode) {
+            Long productoId = l.hasNonNull("productoId") ? l.get("productoId").asLong() : null;
+            Integer cantidad = l.hasNonNull("cantidad") ? l.get("cantidad").asInt() : 0;
 
+            if (productoId == null || cantidad <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada detalle debe tener productoId y cantidad > 0");
+            }
+
+            Producto producto = productoRepository.findById(productoId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no encontrado: " + productoId));
+
+            DetalleVenta detalle = new DetalleVenta();
+            detalle.setProductoId(productoId);
+            detalle.setNombreProducto(producto.getNombre());
+            detalle.setPrecio(producto.getPrecio());
+            detalle.setCantidad(cantidad);
+            detalle.setVenta(venta);
+
+            venta.getDetallesVentas().add(detalle);
+            totalVenta += producto.getPrecio() * cantidad;
+        }
+
+        validarStockPreventa(venta);
+        venta.setImporteTotal(totalVenta);
+
+        Venta ventaGuardada = ventaRepository.save(venta);
+        ventaGuardada.getDetallesVentas().forEach(this::procesarDetalleParaStockYProducto);
+
+        VentaDto dto = mapper.map(ventaGuardada, VentaDto.class);
+        dto.setSucursalId(sucursal.getId());
+        dto.setSucursal(new SucursalDto(sucursal.getNombre(), sucursal.getDireccion()));
         return dto;
     }
-}
 
+    private void validarStockPreventa(Venta venta) {
+        if (venta.getDetallesVentas() == null) return;
+
+        for (DetalleVenta dv : venta.getDetallesVentas()) {
+            int cantidad = dv.getCantidad() != null ? dv.getCantidad() : 0;
+            Long productoId = dv.getProductoId();
+
+            if (productoId == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "No se puede vender un producto sin identificar: " + dv.getNombreProducto());
+            }
+
+            Producto producto = productoRepository.findById(productoId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Producto no encontrado: " + productoId));
+
+            int stockActual = producto.getStock() != null ? producto.getStock() : 0;
+            if (stockActual < cantidad) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Stock insuficiente para el producto " + producto.getNombre()
+                                + ": disponible=" + stockActual + ", solicitado=" + cantidad);
+            }
+        }
+    }
+
+    private void procesarDetalleParaStockYProducto(DetalleVenta dv) {
+        Long productoId = dv.getProductoId();
+        int cantidad = dv.getCantidad() != null ? dv.getCantidad() : 0;
+
+        Optional<Producto> opt = productoRepository.findById(productoId);
+        if (!opt.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Producto desapareció antes de procesar: " + productoId);
+        }
+
+        Producto producto = opt.get();
+
+        if (dv.getNombreProducto() != null && !dv.getNombreProducto().equals(producto.getNombre())) {
+            producto.setNombre(dv.getNombreProducto());
+        }
+
+        if (dv.getPrecio() != null && !dv.getPrecio().equals(producto.getPrecio())) {
+            producto.setPrecio(dv.getPrecio());
+        }
+
+        int stockPrevio = producto.getStock() != null ? producto.getStock() : 0;
+        producto.setStock(Math.max(stockPrevio - cantidad, 0));
+
+        int vecesPrevias = producto.getVecesVendido() != null ? producto.getVecesVendido() : 0;
+        producto.setVecesVendido(vecesPrevias + cantidad);
+
+        productoRepository.save(producto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<VentaDto> obtenerVentasPorSucursalYFecha(Long sucursalId, LocalDate fecha) {
+        List<Venta> ventas = ventaRepository.findBySucursalIdAndFechaVentaAndEliminadoFalse(sucursalId, fecha);
+        return ventas.stream()
+                .map(v -> mapper.map(v, VentaDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void anularVenta(Long id) {
+        Venta venta = ventaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venta no encontrada"));
+        venta.setEliminado(true);
+        ventaRepository.save(venta);
+    }
+}

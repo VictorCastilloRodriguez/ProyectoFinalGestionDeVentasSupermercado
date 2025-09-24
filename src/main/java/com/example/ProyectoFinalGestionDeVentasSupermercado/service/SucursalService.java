@@ -26,34 +26,36 @@ public class SucursalService {
         Sucursal sucursal = sucursalRepository.findById(id)
                 .orElseThrow(() -> new SucursalNotFoundException("Sucursal con id: " + id + " no encontrada"));
 
-        sucursal.setNombreSucursal(sucursalDto.getNombreSucursal());
-        sucursal.setDireccion(sucursalDto.getDireccion());
-        Sucursal actualizada = sucursalRepository.save(sucursal);
-        return entityToDto(actualizada);
+        sucursal.setNombre(sucursalDto.getNombreSucursal());
+        sucursal.setDireccion(sucursalDto.getDireccionSucursal());
+        return entityToDto(sucursalRepository.save(sucursal));
     }
 
     public void eliminarSucursal(Long id) {
-        if (!sucursalRepository.existsById(id)) {
-            throw new SucursalNotFoundException(id);
+        Sucursal sucursalEliminada = sucursalRepository.findById(id)
+                .orElseThrow(() -> new SucursalNotFoundException("Sucursal con id: " + id + " no encontrada"));
+
+        if (sucursalEliminada.isCerrada()) {
+            throw new SucursalNotFoundException("Sucursal con id: " + id + " ya está cerrada");
         }
-        sucursalRepository.deleteById(id);
+        sucursalEliminada.setCerrada(true);
+        sucursalRepository.save(sucursalEliminada);
     }
 
     public Map<Long, SucursalDto> listarSucursales() {
         return sucursalRepository.findAll().stream()
+                .filter(sucursal -> !sucursal.isCerrada())
                 .collect(Collectors.toMap(Sucursal::getId, this::entityToDto));
     }
 
     private Sucursal dtoToEntity(SucursalDto dto) {
         Sucursal sucursal = new Sucursal();
-        sucursal.setNombreSucursal(dto.getNombreSucursal());
-        sucursal.setDireccion(dto.getDireccion());
+        sucursal.setNombre(dto.getNombreSucursal());
+        sucursal.setDireccion(dto.getDireccionSucursal());
         return sucursal;
     }
 
     private SucursalDto entityToDto(Sucursal sucursal) {
-        return new SucursalDto(sucursal.getNombreSucursal(), sucursal.getDireccion());
+        return new SucursalDto(sucursal.getNombre(), sucursal.getDireccion());
     }
 }
-
-

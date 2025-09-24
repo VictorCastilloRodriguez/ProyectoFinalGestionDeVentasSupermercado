@@ -1,14 +1,11 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class DetalleVentaDto {
     private Long productoId;
-    private int cantidad;
-    private double importe;
+    private String nombreProducto;
+    private Double precio;
+    private Integer cantidad;
 }

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +19,20 @@ public class Venta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDateTime fechaVenta;
-    private boolean eliminado = false; //borrado lógico.
+
+    @Column(nullable = false)
+    private LocalDate fechaVenta;
+
+    @Column(nullable = false)
+    private boolean eliminado = false;
 
     @ManyToOne
     @JoinColumn(name = "sucursal_id", nullable = false)
     private Sucursal sucursal;
 
-    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
+    @Column(name = "importe_total", nullable = false)
+    private Double importeTotal = 0.0;
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleVenta> detallesVentas = new ArrayList<>();
 }

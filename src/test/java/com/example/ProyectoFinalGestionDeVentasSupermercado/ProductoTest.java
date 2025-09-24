@@ -29,8 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class ProductoTest {
 
-    private Producto producto;
-    private ProductoDto productoDto;
+    private String token;
 
 
     @Autowired
@@ -41,10 +40,27 @@ public class ProductoTest {
     private ProductoRepository productoRepository;
 
     @BeforeEach
-    public void setUp() {
-        productoDto = new ProductoDto("productoTest", 1.43, 55, Categoria.ALIMENTACION);
+    public void setUp() throws Exception {
+        token = obtenerTokenAdmin();
     }
 
+   //TOKEN
+    private String obtenerTokenAdmin() throws Exception {
+        //PONGO MI USUARIO QUE HE ECHO ANTES EN EL /register
+        String loginJson = "{ \"username\": \"cintia\", \"password\": \"1234\" }";
+
+        String respuesta = mockMvc.perform(
+                        post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginJson)
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return respuesta;
+    }
 
     //TEST DE CREACION
 
@@ -59,9 +75,9 @@ public class ProductoTest {
 
         mockMvc.perform(
                         post("/api/productos")
+                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonProducto)
-                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nombreProducto").value("Leche entera"))
@@ -82,9 +98,9 @@ public class ProductoTest {
 
         mockMvc.perform(
                         post("/api/productos")
+                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonProducto)
-                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -104,9 +120,10 @@ public class ProductoTest {
 
         mockMvc.perform(
                         put("/api/productos/" + productoInicial.getId())
+                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonActualizado)
-                                .with(httpBasic("admin", "admin"))
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombreProducto").value("Producto actualizado"))
@@ -126,9 +143,10 @@ public class ProductoTest {
 
         mockMvc.perform(
                         put("/api/productos/-1")
+                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonActualizado)
-                                .with(httpBasic("admin", "admin"))
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -144,9 +162,10 @@ public class ProductoTest {
 
         mockMvc.perform(
                         put("/api/productos/4545451") //4545451 Hemos puesto este número a consciencia sabiendo que no existe en nuestra base de datos, su supera el numero de productos deberia ser cambiado
+                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonActualizado)
-                                .with(httpBasic("admin", "admin"))
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -165,9 +184,10 @@ public class ProductoTest {
 
         mockMvc.perform(
                         put("/api/productos/" + productoInicial.getId())
+                                .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonVacio)
-                                .with(httpBasic("admin", "admin"))
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -202,7 +222,8 @@ public class ProductoTest {
 
         mockMvc.perform(
                         delete("/api/productos/" + producto.getId())
-                                .with(httpBasic("admin", "admin"))
+                                .header("Authorization", "Bearer " + token)
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().string("EL producto ha sido eliminado"));
@@ -219,7 +240,8 @@ public class ProductoTest {
 
         mockMvc.perform(
                         delete("/api/productos/" + idInexistente)
-                                .with(httpBasic("admin", "admin"))
+                                .header("Authorization", "Bearer " + token)
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isNotFound());
     }
@@ -233,7 +255,8 @@ public class ProductoTest {
 
         mockMvc.perform(
                         delete("/api/productos/" + producto.getId())
-                                .with(httpBasic("admin", "admin"))
+                                .header("Authorization", "Bearer " + token)
+//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isNotFound());
     }
