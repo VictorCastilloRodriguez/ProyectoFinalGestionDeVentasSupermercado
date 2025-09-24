@@ -8,6 +8,26 @@ import java.util.List;
 
 public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long> {
 
+
+    @Query("SELECT SUM(v.importe) FROM VentaDetalleDto v")
+    Double totalIngresosVenta();
+
+    @Query("SELECT v.producto, SUM(v.unidades) as totalUnidades" +
+           "FROM VentaDetalleDto v" +
+           "GROUP BY v.producto" +
+           "ORDER BY totalUnidades DESC")
+    List<Object[]> findProductosMasVendidos();
+
+
+    @Query("SELECT v.venta.id, SUM(v.importe) FROM VentaDetalleDto v GROUP BY v.venta.id")
+    List<Object[]> totalIngresosPorVenta();
+
+
+    @Query("SELECT v.sucursal.id, SUM(v.importe) FROM VentaDetalleDto v GROUP BY v.sucursal.id")
+    List<Object[]> totalIngresosPorSucursal();
+
+
     @Query("SELECT dv.productoId, SUM(dv.cantidad) as total FROM DetalleVenta dv GROUP BY dv.productoId ORDER BY total DESC")
     List<Object[]> findProductoMasVendido();
 }
+
