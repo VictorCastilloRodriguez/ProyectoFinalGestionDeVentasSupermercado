@@ -44,6 +44,9 @@ Ventas
 
 Estadísticas
 - `GET /api/estadisticas/producto-mas-vendido` → Consultar producto más vendido
+- `GET /api/estadisticas/productos-mas-vendidos → Consultar los productos más vendidos
+- `GET /api/estadisticas/total-ingresos → Consultar los ingresos totales del supermercado
+- `GET /api/estadisticas/ingresos-por-sucursal → Consultar los ingresos totales por sucursal
 
 Autenticación
 - `POST /api/auth/register` → Registro de usuario
