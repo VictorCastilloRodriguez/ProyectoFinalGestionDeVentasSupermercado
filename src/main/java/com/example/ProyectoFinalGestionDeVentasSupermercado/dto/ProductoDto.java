@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class ProductoDto {
-    private Long id;
+
     private String nombreProducto;
     private Double precioProducto;
     private Integer stockProducto;
