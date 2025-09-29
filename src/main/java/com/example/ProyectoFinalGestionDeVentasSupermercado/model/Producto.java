@@ -19,16 +19,10 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del producto no puede estar vacio")
+
     @Column(nullable = false)
     private String nombre;
-
-    @Min(value = 0, message = "El precio debe ser mayor o igual a 0")
-    @Column(nullable = false)
     private Double precio;
-
-    @Min(value = 0, message = "El stock debe ser mayor o igual a 0")
-    @Column(nullable = false)
     private Integer stock;
 
     @Enumerated(EnumType.STRING)

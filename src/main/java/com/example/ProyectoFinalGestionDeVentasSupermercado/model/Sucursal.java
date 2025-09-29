@@ -19,14 +19,10 @@ public class Sucursal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre de la sucursal no puede estar vacia")
     @Column(nullable = false)
     private String nombre;
-
-    @NotBlank(message = "La direccion de la sucursal no puede estar vacia")
     @Column(nullable = false)
     private String direccion;
-
     @Column(nullable = false)
     private boolean cerrada = false;
 

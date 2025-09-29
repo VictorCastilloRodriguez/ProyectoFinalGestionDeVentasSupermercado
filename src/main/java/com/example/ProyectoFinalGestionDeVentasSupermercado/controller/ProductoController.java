@@ -8,10 +8,13 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -22,10 +25,10 @@ public class ProductoController {
 
     // Crear producto
     @PostMapping
-    public ResponseEntity<ProductoDto> crearProducto(@Valid @RequestBody ProductoDto  productoDto) {
-
+    public ResponseEntity<ProductoDto> crearProducto(@Valid @RequestBody ProductoDto productoDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productoService.save(productoDto));
     }
+
 
     // Actualizar producto
     @PutMapping("/{id}")
@@ -47,5 +50,3 @@ public class ProductoController {
         return ResponseEntity.ok(productoService.findAll());
     }
 }
-
-
