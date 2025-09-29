@@ -44,8 +44,12 @@ public class SucursalTest {
 
     //TOKEN
     private String obtenerTokenAdmin() throws Exception {
-        //PONGO MI USUARIO QUE HE ECHO ANTES EN EL /register
-        String loginJson = "{ \"username\": \"cintia\", \"password\": \"1234\" }";
+        //REGISTRAMOS USUARIO PRUEBAS E INICIAMOS SESION
+        String loginJson = "{ \"username\": \"pruebas\", \"password\": \"pruebas\" }";
+
+        mockMvc.perform( post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson));
 
         String respuesta = mockMvc.perform(
                         post("/api/auth/login")

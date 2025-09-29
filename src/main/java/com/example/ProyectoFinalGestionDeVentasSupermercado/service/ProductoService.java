@@ -38,6 +38,10 @@ public class ProductoService {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ProductoNotFoundException("Producto con id: " + id + " no encontrado"));
 
+        if (producto.isRetirado()){
+            throw new ProductoNotFoundException("Producto con id: " + id + " fue retirado anteriormente.");
+
+        }
         producto.setNombre(productoActualizado.getNombreProducto());
         producto.setPrecio(productoActualizado.getPrecioProducto());
         producto.setStock(productoActualizado.getStockProducto());

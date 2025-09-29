@@ -17,7 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+/*
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+*/
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,8 +48,12 @@ public class ProductoTest {
 
    //TOKEN
     private String obtenerTokenAdmin() throws Exception {
-        //PONGO MI USUARIO QUE HE ECHO ANTES EN EL /register
-        String loginJson = "{ \"username\": \"cintia\", \"password\": \"1234\" }";
+        //REGISTRAMOS USUARIO PRUEBAS E INICIAMOS SESION
+        String loginJson = "{ \"username\": \"pruebas\", \"password\": \"pruebas\" }";
+
+        mockMvc.perform( post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson));
 
         String respuesta = mockMvc.perform(
                         post("/api/auth/login")
@@ -187,7 +193,6 @@ public class ProductoTest {
                                 .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonVacio)
-//                                .with(httpBasic("admin", "admin"))
                 )
                 .andExpect(status().isBadRequest());
     }
