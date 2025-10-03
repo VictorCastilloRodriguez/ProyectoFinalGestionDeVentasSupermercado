@@ -27,9 +27,9 @@ public class VentaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> anularVenta(@PathVariable Long id) {
+    public ResponseEntity<String> anularVenta(@PathVariable Long id) {
         ventaService.anularVenta(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Venta eliminada correctamente.");
     }
 
     @GetMapping
