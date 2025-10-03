@@ -13,7 +13,7 @@ import java.util.Map;
 @Data
 public class VentaCreacionDto {
 
-    @JsonProperty("fechaVenta")
+/*    @JsonProperty("fechaVenta")
     @JsonIgnore
     private LocalDate fechaVenta;
 
@@ -21,10 +21,19 @@ public class VentaCreacionDto {
     @NotNull(message = "sucursalId es requerido")
     private Long sucursalId;
 
-    @JsonProperty("clienteId")
-    private Long clienteId;
+    *//*@JsonProperty("clienteId")
+    private Long clienteId;*//*
 
     @JsonProperty("detalles")
     @NotEmpty(message = "detalles es requerido y no puede estar vacío")
+    private List<Map<String, Object>> detalles;*/
+
+
+    @NotNull(message = "sucursalId es requerido")
+    private Long sucursalId;
+
+    @NotEmpty(message = "detalles es requerido y no puede estar vacío")
     private List<Map<String, Object>> detalles;
 }
+
+

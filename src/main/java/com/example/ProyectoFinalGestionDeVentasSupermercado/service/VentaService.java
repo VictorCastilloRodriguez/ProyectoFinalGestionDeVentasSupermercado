@@ -1,6 +1,7 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.service;
 
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.SucursalDto;
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaCreacionDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.DetalleVenta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Producto;
@@ -9,7 +10,6 @@ import com.example.ProyectoFinalGestionDeVentasSupermercado.model.Venta;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.ProductoRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.SucursalRepository;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.repository.VentaRepository;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,29 +39,25 @@ public class VentaService {
     private ModelMapper mapper;
 
     @Transactional
-    public VentaDto crearVentaDesdeJson(JsonNode payload) {
+    public VentaDto crearVentaDesdeDto(VentaCreacionDto dto) {
         Venta venta = new Venta();
         venta.setFechaVenta(LocalDate.now());
 
-        Long sucursalId = payload.hasNonNull("sucursalId") ? payload.get("sucursalId").asLong() : null;
-        if (sucursalId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sucursalId es obligatorio");
-        }
-
+        Long sucursalId = dto.getSucursalId();
         Sucursal sucursal = sucursalRepository.findById(sucursalId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sucursal no encontrada: " + sucursalId));
         venta.setSucursal(sucursal);
 
-        JsonNode detallesNode = payload.get("detalles");
-        if (detallesNode == null || !detallesNode.isArray()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'detalles' debe ser un arreglo");
+        List<Map<String, Object>> detalles = dto.getDetalles();
+        if (detalles == null || detalles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'detalles' no puede estar vacío");
         }
 
         double totalVenta = 0.0;
 
-        for (JsonNode l : detallesNode) {
-            Long productoId = l.hasNonNull("productoId") ? l.get("productoId").asLong() : null;
-            Integer cantidad = l.hasNonNull("cantidad") ? l.get("cantidad").asInt() : 0;
+        for (Map<String, Object> item : detalles) {
+            Long productoId = item.get("productoId") instanceof Number ? ((Number) item.get("productoId")).longValue() : null;
+            Integer cantidad = item.get("cantidad") instanceof Number ? ((Number) item.get("cantidad")).intValue() : 0;
 
             if (productoId == null || cantidad <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada detalle debe tener productoId y cantidad > 0");
@@ -86,10 +83,10 @@ public class VentaService {
         Venta ventaGuardada = ventaRepository.save(venta);
         ventaGuardada.getDetallesVentas().forEach(this::procesarDetalleParaStockYProducto);
 
-        VentaDto dto = mapper.map(ventaGuardada, VentaDto.class);
-        dto.setSucursalId(sucursal.getId());
-        dto.setSucursal(new SucursalDto(sucursal.getNombre(), sucursal.getDireccion()));
-        return dto;
+        VentaDto dtoRespuesta = mapper.map(ventaGuardada, VentaDto.class);
+        dtoRespuesta.setSucursalId(sucursal.getId());
+        dtoRespuesta.setSucursal(new SucursalDto(sucursal.getNombre(), sucursal.getDireccion()));
+        return dtoRespuesta;
     }
 
     private void validarStockPreventa(Venta venta) {
@@ -148,9 +145,14 @@ public class VentaService {
 
     @Transactional(readOnly = true)
     public List<VentaDto> obtenerVentasPorSucursalYFecha(Long sucursalId, LocalDate fecha) {
-        List<Venta> ventas = ventaRepository.findBySucursalIdAndFechaVentaAndEliminadoFalse(sucursalId, fecha);
+        List<Venta> ventas = ventaRepository.findAll().stream()
+                .filter(v-> !v.isEliminado())
+                .filter(v ->!v.getSucursal().isCerrada())
+                .filter(v -> sucursalId == null || v.getSucursal().getId().equals(sucursalId))
+                .filter(v -> fecha == null || v.getFechaVenta().equals(fecha))
+                .collect(Collectors.toList());
         return ventas.stream()
-                .map(v -> mapper.map(v, VentaDto.class))
+                .map(v-> mapper.map(v, VentaDto.class))
                 .collect(Collectors.toList());
     }
 
