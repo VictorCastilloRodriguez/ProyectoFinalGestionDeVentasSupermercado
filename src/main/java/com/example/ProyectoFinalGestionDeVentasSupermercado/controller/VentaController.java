@@ -1,8 +1,10 @@
 package com.example.ProyectoFinalGestionDeVentasSupermercado.controller;
 
+import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaCreacionDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.dto.VentaDto;
 import com.example.ProyectoFinalGestionDeVentasSupermercado.service.VentaService;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +20,10 @@ public class VentaController {
     private VentaService ventaService;
 
     @PostMapping
-    public ResponseEntity<VentaDto> registrarVenta(@RequestBody JsonNode payload) {
-        if (payload == null || payload.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<VentaDto> registrarVenta(@Valid @RequestBody VentaCreacionDto dto) {
 
-        VentaDto dto = ventaService.crearVentaDesdeJson(payload);
-        return new ResponseEntity<>(dto, HttpStatus.CREATED);
+        VentaDto respuesta = ventaService.crearVentaDesdeDto(dto);
+        return new ResponseEntity<>(respuesta, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
@@ -35,10 +34,10 @@ public class VentaController {
 
     @GetMapping
     public ResponseEntity<?> obtenerVentasPorSucursalYFecha(
-            @RequestParam Long sucursalId,
+            @RequestParam(required = false) Long sucursalId,
             @RequestParam(required = false) String fecha
     ) {
-        LocalDate fechaConsulta = fecha != null ? LocalDate.parse(fecha) : LocalDate.now();
+        LocalDate fechaConsulta = fecha != null ? LocalDate.parse(fecha) : null;
         return ResponseEntity.ok(ventaService.obtenerVentasPorSucursalYFecha(sucursalId, fechaConsulta));
     }
 }
