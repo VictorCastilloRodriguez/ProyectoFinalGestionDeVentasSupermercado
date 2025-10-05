@@ -17,6 +17,9 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -24,14 +27,15 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos",
+							"raw": "http://localhost:8080/api/productos",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos"
+								"api",
+								"productos"
 							]
 						}
 					},
@@ -40,11 +44,21 @@
 				{
 					"name": "Productos",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "\r\n{\r\n  \"username\": \"silvia\",\r\n  \"password\": \"claveSegura123\"\r\n}\r\n",
+							"raw": "{\r\n        \"nombreProducto\": \"Agua con gas\",\r\n        \"precioProducto\": 1.25,\r\n        \"stockProducto\": 28,\r\n        \"categoriaProducto\": \"ALIMENTACION\"\r\n    }\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -52,7 +66,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/auth/register",
+							"raw": "http://localhost:8080/api/productos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -60,8 +74,7 @@
 							"port": "8080",
 							"path": [
 								"api",
-								"auth",
-								"register"
+								"productos"
 							]
 						}
 					},
@@ -70,30 +83,29 @@
 				{
 					"name": "Productos",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"nombreProducto\": \"arroz basmati\",\r\n        \"precioProducto\": 1.35,\r\n        \"stockProducto\": 48,\r\n        \"categoriaProducto\": \"ALIMENTACION\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:8080/api/sucursales",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"sucursales"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Productos",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/productos/1",
+							"raw": "http://localhost:8080/api/productos/9",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -102,7 +114,38 @@
 							"path": [
 								"api",
 								"productos",
-								"1"
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Productos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/productos/9",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"productos",
+								"9"
 							],
 							"query": [
 								{
@@ -131,6 +174,9 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -138,14 +184,16 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos",
+							"raw": "http://localhost:8080/api/estadisticas/productos-mas-vendidos",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos"
+								"api",
+								"estadisticas",
+								"productos-mas-vendidos"
 							]
 						}
 					},
@@ -157,6 +205,9 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -164,14 +215,16 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos",
+							"raw": "http://localhost:8080/api/estadisticas/producto-mas-vendido",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos"
+								"api",
+								"estadisticas",
+								"producto-mas-vendido"
 							]
 						}
 					},
@@ -183,6 +236,9 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -190,14 +246,16 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos",
+							"raw": "http://localhost:8080/api/estadisticas/total-ingresos",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos"
+								"api",
+								"estadisticas",
+								"total-ingresos"
 							]
 						}
 					},
@@ -209,6 +267,9 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -216,14 +277,16 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos",
+							"raw": "http://localhost:8080/api/estadisticas/ingresos-por-sucursal",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos"
+								"api",
+								"estadisticas",
+								"ingresos-por-sucursal"
 							]
 						}
 					},
@@ -237,39 +300,13 @@
 				{
 					"name": "Sucursales",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/vuelos/3",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"vuelos",
-								"3"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Sucursales",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "\r\n{\r\n  \"username\": \"silvia\",\r\n  \"password\": \"claveSegura123\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/auth/register",
+							"raw": "http://localhost:8080/api/sucursales",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -277,8 +314,7 @@
 							"port": "8080",
 							"path": [
 								"api",
-								"auth",
-								"register"
+								"sucursales"
 							]
 						}
 					},
@@ -292,16 +328,16 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{vault:authorization-secret}}",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
 						},
-						"method": "PUT",
+						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombreSucursal\": \"Gandia\",\r\n    \"direccionSucursal\": \"Germanias, 10\"\r\n}",
+							"raw": "    {\r\n        \"nombreSucursal\": \"Palma de Gandia\",\r\n        \"direccionSucursal\": \"Paseo Boloñeta, 10\"\r\n    }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -309,7 +345,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/sucursales/1",
+							"raw": "http://localhost:8080/api/sucursales",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -317,8 +353,7 @@
 							"port": "8080",
 							"path": [
 								"api",
-								"sucursales",
-								"1"
+								"sucursales"
 							]
 						}
 					},
@@ -327,6 +362,56 @@
 				{
 					"name": "Sucursales",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombreSucursal\": \"Palma de Gandia\",\r\n    \"direccionSucursal\": \"Paseo Boloñeta, 14\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/sucursales/7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"sucursales",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sucursales",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [],
 						"body": {
@@ -339,15 +424,16 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos/12",
+							"raw": "http://localhost:8080/api/sucursales/7",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos",
-								"12"
+								"api",
+								"sucursales",
+								"7"
 							]
 						}
 					},
@@ -366,7 +452,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{vault:authorization-secret}}",
+									"value": "{{token}}",
 									"type": "string"
 								}
 							]
@@ -375,7 +461,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"sucursalId\": 1,\r\n  \"clienteId\": 5,\r\n  \"detalles\": [\r\n    {\r\n      \"productoId\": 3,\r\n      \"cantidad\": 2\r\n    },\r\n    {\r\n      \"productoId\": 2,\r\n      \"cantidad\": 1\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"sucursalId\": 1,\r\n  \"detalles\": [\r\n    {\r\n      \"productoId\": 3,\r\n      \"cantidad\": 2\r\n    },\r\n    {\r\n      \"productoId\": 2,\r\n      \"cantidad\": 1\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -400,18 +486,32 @@
 				{
 					"name": "Ventas",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/vuelos/3",
+							"raw": "http://localhost:8080/api/ventas?sucursalId=1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos",
-								"3"
+								"api",
+								"ventas"
+							],
+							"query": [
+								{
+									"key": "fecha",
+									"value": "2025-10-01",
+									"disabled": true
+								},
+								{
+									"key": "sucursalId",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -420,6 +520,16 @@
 				{
 					"name": "Ventas",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [],
 						"body": {
@@ -432,15 +542,16 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/vuelos/12",
+							"raw": "http://localhost:8080/api/ventas/9",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"vuelos",
-								"12"
+								"api",
+								"ventas",
+								"9"
 							]
 						}
 					},
@@ -454,6 +565,9 @@
 				{
 					"name": "Registro",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
