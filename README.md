@@ -4,6 +4,12 @@ Descripción
 
 És una API RESTful desarrollada con Spring Boot para gestionar ventas en una cadena de supermercados 
 con autenticación JWT y documentación Swagger.
+
+Para poder arrancar la app, és necesario primero configurar las variables de entorno:
+- SPRING_DATASOURCE_PASSWORD: (Vacio)
+- SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/supermercado
+- SPRING_DATASOURCE_USERNAME: root
+
 Permite administrar:
 - Productos
 - Sucursales
